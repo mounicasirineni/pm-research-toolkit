@@ -54,7 +54,7 @@ Lovable Research Library
 
 ## Prompt Templates
 
-The four templates are in [`/prompt-templates`](/prompt-templates). Each template:
+The four templates are in [`/prompt-templates`](/https://github.com/mounicasirineni/pm-research-toolkit/tree/main/prompt-templates). Each template:
 
 - Has a single variable to replace (e.g. `[COMPANY]`, `[PRODUCT NAME]`)
 - Runs as a sequence of prompts in Perplexity Deep Research
