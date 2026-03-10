@@ -81,7 +81,7 @@ For each new piece:
 4. Export as Word doc (synthesis first, full research below)
 5. Convert to Markdown and paste into the Lovable library
 
-Total time per piece: ~45 minutes in Perplexity, ~10 minutes to format and publish.
+Total time per piece: ~20-30 minutes in Perplexity, ~10 minutes to format and publish.
 
 ## What I Learned Building This
 
