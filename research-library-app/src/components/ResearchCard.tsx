@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Pencil, Trash2 } from 'lucide-react';
 import { Marked } from 'marked';
 
 const cardMarked = new Marked({ breaks: true });
@@ -30,10 +30,13 @@ const TYPE_COLORS: Record<ResearchType, { bg: string; text: string; dot: string 
 
 interface ResearchCardProps {
   piece: ResearchPiece;
+  isEditMode: boolean;
   onExpand: (piece: ResearchPiece) => void;
+  onEdit: (piece: ResearchPiece) => void;
+  onDelete: (piece: ResearchPiece) => void;
 }
 
-export default function ResearchCard({ piece, onExpand }: ResearchCardProps) {
+export default function ResearchCard({ piece, isEditMode, onExpand, onEdit, onDelete }: ResearchCardProps) {
   const renderedSynthesis = useMemo(
     () => (piece.synthesis ? (cardMarked.parse(piece.synthesis, { async: false }) as string) : ''),
     [piece.synthesis]
@@ -57,12 +60,32 @@ export default function ResearchCard({ piece, onExpand }: ResearchCardProps) {
             <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
             {piece.type}
           </span>
-          {piece.date && (
-            <span className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
-              <Calendar size={11} strokeWidth={1.8} />
-              {piece.date}
-            </span>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {piece.date && (
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                <Calendar size={11} strokeWidth={1.8} />
+                {piece.date}
+              </span>
+            )}
+            {isEditMode && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onEdit(piece); }}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  title="Edit"
+                >
+                  <Pencil size={13} strokeWidth={2} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onDelete(piece); }}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Delete"
+                >
+                  <Trash2 size={13} strokeWidth={2} />
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <h3 className="text-base font-semibold text-gray-900 leading-snug mb-3">
