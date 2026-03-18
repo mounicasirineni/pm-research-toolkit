@@ -1,7 +1,7 @@
 # PM Research Toolkit
 
 > A personal system for building deep, structured knowledge on products,
-> companies, and markets — powered by Google Deep Research and Claude API.
+> companies, and markets — powered by Gemini Deep Research and Claude API.
 
 ## What This Is
 
@@ -42,7 +42,7 @@ Most research prompts ask "what is X." These templates ask different questions:
   reveal about product strategy"**
 
 Every template forces two things most research skips: **signal/noise
-discipline** (every claim is traceable — Google Deep Research substitutes inline 
+discipline** (every claim is traceable — Gemini Deep Research substitutes inline 
 citations and a numbered sources list rather than [DOCUMENTED]/[INFERRED] labels, 
 but the intent is the same: no ungrounded assertions) and **a prepared opinion** 
 (a specific, defensible point of view grounded in the research, not a summary of 
@@ -108,7 +108,7 @@ it is) → How to compete against the leader (realistic path for #2 or #3)
 ```
 Prompt Template (one of four types)
         ↓
-Google Deep Research
+Gemini Deep Research
 (6-7 sequential prompts, each building on the last)
         ↓
 Word Document Export
@@ -165,7 +165,7 @@ to fund this bet" surfaces more than "what is their strategy."
 
 **Signal/noise discipline.** Every template is designed so claims are traceable 
 to sources. The prompt asks for [DOCUMENTED]/[INFERRED] labeling — in practice, 
-Google Deep Research substitutes inline citations and a consolidated sources list. 
+Gemini Deep Research substitutes inline citations and a consolidated sources list. 
 Either way, the output distinguishes grounded claims from reasoned inference, 
 which makes the synthesis more defensible.
 
@@ -214,7 +214,7 @@ pm-research-toolkit/
 
 ## Built With
 
-- Google Deep Research
+- Gemini Deep Research
 - Bolt (frontend + deployment)
 - Supabase (PostgreSQL + Edge Functions)
 - Claude API (markdown auto-formatter)
