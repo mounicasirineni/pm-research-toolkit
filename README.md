@@ -113,7 +113,7 @@ Gemini Deep Research
         ↓
 Word Document Export
 (synthesis first, full research sections below,
-[DOCUMENTED]/[INFERRED] labels preserved)
+inline citations and numbered sources list preserved)
         ↓
 Paste into Research Library app
         ↓
@@ -136,7 +136,9 @@ and Claude API.
 **Features:**
 - Card grid browsable by research type
 - Auto-formatter: raw text in → structured markdown out, via Claude API
-  running server-side in a Supabase Edge Function
+  running server-side in a Supabase Edge Function. Handles large documents
+  via paragraph-boundary chunking, bold label detection, list inference,
+  and citation-safe formatting — without altering any factual content.
 - Inline citation conversion (`sentence.1` → `sentence.[1]`)
 - Sources section consolidated as a single numbered list
 - Markdown rendering with tables, headings, bold terms
@@ -182,6 +184,16 @@ knows. The opinion has to be grounded in a signal from the research above.
   and a Company Deep Dive on Meta, the Competitive Landscape on Short-Form
   Video took half the time to synthesize because the underlying model was
   already built
+- **Auto-formatting is harder than it looks** — getting Claude to format 
+  faithfully without hallucinating statistics, splitting bullets, or 
+  promoting labels to headings required precise prompt constraints and 
+  paragraph-boundary chunking on the frontend
+- **Bolt locks in its own Supabase instance on deployment** — when Bolt 
+  deploys, it provisions its own Supabase project and overrides any external 
+  Supabase connection. Edge functions, database, and environment variables all 
+  move to Bolt's managed instance. You lose direct dashboard access to edge 
+  functions, so any prompt or config changes must be made in Bolt's code editor 
+  directly and deployed via Bolt's MCP tool — not through the Supabase dashboard 
 
 ## Repo Structure
 
@@ -197,7 +209,7 @@ pm-research-toolkit/
     ├── src/
     ├── supabase/
     │   └── functions/
-    │       └── format-research/   ← Claude API Edge Function
+    │       └── format-research/   ← Claude API Edge Function (deployed via Bolt MCP)
     ├── public/
     └── package.json
 ```
@@ -206,6 +218,6 @@ pm-research-toolkit/
 
 - Gemini Deep Research
 - Bolt (frontend + deployment)
-- Supabase (PostgreSQL + Edge Functions)
+- Supabase (PostgreSQL + Edge Functions) — managed by Bolt post-deployment
 - Claude API (markdown auto-formatter)
 - React + Vite + Tailwind
