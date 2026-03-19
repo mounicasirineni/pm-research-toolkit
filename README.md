@@ -142,16 +142,6 @@ and Claude API.
 - Markdown rendering with tables, headings, bold terms
 - Read-only public view — content managed privately
 
-**Current research pieces:**
-
-| Topic | Type |
-|-------|------|
-| Ads | Domain Primer |
-| Meta | Company Deep Dive |
-| Instagram Reels | Product Teardown |
-| Short-Form Video | Competitive Landscape |
-| Uber | Company Deep Dive |
-
 ## Template Design Principles
 
 **Sequential prompting over single-shot prompting.** Each template runs 6-7
