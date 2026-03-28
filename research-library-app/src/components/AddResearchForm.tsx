@@ -17,7 +17,6 @@ const EMPTY_FORM: NewResearchPiece = {
   full_research: '',
 };
 
-const CHUNK_SIZE = 3000;
 const SOURCES_HEADING_RE = /^(works cited|sources|references)\s*$/im;
 
 function extractSources(text: string): { bodyText: string; sourcesText: string } {
@@ -29,10 +28,7 @@ function extractSources(text: string): { bodyText: string; sourcesText: string }
 }
 
 function preprocessCitations(text: string): string {
-  return text
-    .replace(/(\w)\.(\d{1,2})\s/g, '$1.[$2] ')
-    .replace(/(\w)\.(\d{1,2})\n/g, '$1.[$2]\n')
-    .replace(/(\w)\.(\d{1,2})$/gm, '$1.[$2]');
+  return text.replace(/([a-zA-Z"')]\.)(\d+)/g, '$1[$2]');
 }
 
 function formatSources(sources: string): string {
@@ -48,24 +44,6 @@ function formatSources(sources: string): string {
 }
 
 
-function splitIntoChunks(text: string): string[] {
-  if (text.length <= CHUNK_SIZE) return [text];
-
-  const chunks: string[] = [];
-  let remaining = text;
-
-  while (remaining.length > CHUNK_SIZE) {
-    let splitAt = remaining.lastIndexOf('\n\n', CHUNK_SIZE);
-    if (splitAt === -1) splitAt = remaining.lastIndexOf('\n', CHUNK_SIZE);
-    if (splitAt === -1) splitAt = CHUNK_SIZE;
-
-    chunks.push(remaining.slice(0, splitAt).trim());
-    remaining = remaining.slice(splitAt).trim();
-  }
-
-  if (remaining.length > 0) chunks.push(remaining);
-  return chunks;
-}
 
 export default function AddResearchForm({ onClose, onSuccess, editPiece }: AddResearchFormProps) {
   const [form, setForm] = useState<NewResearchPiece>(
@@ -82,7 +60,7 @@ export default function AddResearchForm({ onClose, onSuccess, editPiece }: AddRe
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [flashField, setFlashField] = useState<'synthesis' | 'full_research' | null>(null);
-  const [formattingStatus, setFormattingStatus] = useState<string | null>(null);
+  const [formattingField, setFormattingField] = useState<'synthesis' | 'full_research' | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -106,38 +84,47 @@ export default function AddResearchForm({ onClose, onSuccess, editPiece }: AddRe
             .trim()
         )
       : '';
-    const chunks = splitIntoChunks(bodyText);
-    const total = chunks.length;
-    const formatted: string[] = [];
+    setFormattingField(field);
 
-    setFormattingStatus(total === 1 ? 'Formatting...' : `Formatting section 1 of ${total}...`);
-
-    for (let i = 0; i < chunks.length; i++) {
-      if (total > 1) {
-        setFormattingStatus(`Formatting section ${i + 1} of ${total}...`);
-      }
-
-      console.log(`[format-research] chunk ${i + 1}/${total} INPUT:`, chunks[i].slice(0, 200));
-
-      const { data, error: fnError } = await supabase.functions.invoke('format-research', {
-        body: { rawText: chunks[i] },
-      });
-
-      if (fnError || !data?.text) {
-        console.error('Edge function error:', fnError, 'data:', data);
-        setFormattingStatus(null);
-        return;
-      }
-
-      console.log(`[format-research] chunk ${i + 1}/${total} OUTPUT:`, data.text.slice(0, 200));
-      formatted.push(data.text);
+let formattedBody = '';
+if (bodyText.length <= 8000) {
+  const { data, error: fnError } = await supabase.functions.invoke('format-research', {
+    body: { rawText: bodyText },
+  });
+  if (fnError || !data?.text) {
+    console.error('Edge function error:', fnError, 'data:', data);
+    setFormattingField(null);
+    return;
+  }
+  formattedBody = data.text;
+} else {
+  const paragraphs = bodyText.split(/\n\n+/);
+  const chunks: string[] = [];
+  let current = '';
+  for (const para of paragraphs) {
+    if (current.length + para.length > 6000 && current.length > 0) {
+      chunks.push(current.trim());
+      current = para;
+    } else {
+      current = current ? current + '\n\n' + para : para;
     }
-
-    const formattedBody = formatted.join('\n\n');
-    const result = sourcesText ? `${formattedBody}\n\n${sourcesText}` : formattedBody;
-    console.log('FINAL TAIL:', result.slice(-500));
+  }
+  if (current.trim()) chunks.push(current.trim());
+  for (const chunk of chunks) {
+    const { data, error: fnError } = await supabase.functions.invoke('format-research', {
+      body: { rawText: chunk },
+    });
+    if (fnError || !data?.text) {
+      console.error('Edge function error:', fnError, 'data:', data);
+      setFormattingField(null);
+      return;
+    }
+    formattedBody += (formattedBody ? '\n\n' : '') + data.text;
+  }
+}
+const result = sourcesText ? `${formattedBody}\n\n${sourcesText}` : formattedBody;
     setForm((prev) => ({ ...prev, [field]: result }));
-    setFormattingStatus(null);
+    setFormattingField(null);
     setFlashField(field);
     setTimeout(() => setFlashField(null), 1000);
   };
@@ -235,8 +222,8 @@ export default function AddResearchForm({ onClose, onSuccess, editPiece }: AddRe
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-medium text-gray-700">Synthesis</label>
-              {formattingStatus && flashField !== 'full_research' && (
-                <span className="text-xs text-gray-400 italic">{formattingStatus}</span>
+              {formattingField === 'synthesis' && (
+                <span className="text-xs text-gray-400 italic">Formatting...</span>
               )}
             </div>
             <textarea
@@ -254,8 +241,8 @@ export default function AddResearchForm({ onClose, onSuccess, editPiece }: AddRe
             <div>
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-medium text-gray-700">Full Research</label>
-                {formattingStatus && (
-                  <span className="text-xs text-gray-400 italic">{formattingStatus}</span>
+                {formattingField === 'full_research' && (
+                  <span className="text-xs text-gray-400 italic">Formatting...</span>
                 )}
               </div>
               <p className="text-xs text-gray-400 mt-0.5">
@@ -289,7 +276,7 @@ export default function AddResearchForm({ onClose, onSuccess, editPiece }: AddRe
             </button>
             <button
               type="submit"
-              disabled={saving || formattingStatus !== null}
+              disabled={saving || formattingField !== null}
               className="px-5 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? 'Saving...' : isEdit ? 'Update Research' : 'Save Research'}
