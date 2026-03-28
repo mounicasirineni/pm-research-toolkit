@@ -1,7 +1,7 @@
 # PM Research Toolkit
 
 > A personal system for building deep, structured knowledge on products,
-> companies, and markets — powered by Google Deep Research and Claude API.
+> companies, and markets — powered by Gemini Deep Research and Claude API.
 
 ## What This Is
 
@@ -42,10 +42,10 @@ Most research prompts ask "what is X." These templates ask different questions:
   reveal about product strategy"**
 
 Every template forces two things most research skips: **signal/noise
-discipline** (every claim is traceable — Google Deep Research substitutes inline 
-citations and a numbered sources list rather than [DOCUMENTED]/[INFERRED] labels, 
-but the intent is the same: no ungrounded assertions) and **a prepared opinion** 
-(a specific, defensible point of view grounded in the research, not a summary of 
+discipline** (every claim is traceable — Gemini Deep Research substitutes inline
+citations and a numbered sources list rather than [DOCUMENTED]/[INFERRED] labels,
+but the intent is the same: no ungrounded assertions) and **a prepared opinion**
+(a specific, defensible point of view grounded in the research, not a summary of
 what everyone already knows).
 
 ## The Four Templates
@@ -55,10 +55,15 @@ Surfaces the *why* behind product decisions — not what the product does, but
 what forced changes, what was deprioritized, and what quiet failures reveal
 about strategic limits.
 
-Key prompts: Evolution inflection points → Tradeoffs and roads not taken →
-Metrics story and what the North Star has caused the team to optimize for →
-Quiet failures (metrics that disappeared from earnings narratives, features
-that launched with fanfare and quietly died) → Synthesis
+Key prompts: Evolution inflection points (including user mindset and behavior
+shifts as explicit forcing functions) → User segments defined by job-to-be-done
+and context of use, not demographics — which segment shaped the product, which
+is underserved, where segment needs are in tension → Tradeoffs and roads not
+taken → Metrics story, what the North Star caused the team to optimize for,
+and where metrics diverge from stated user preferences → Quiet failures
+(metrics that disappeared from earnings narratives, features that launched
+with fanfare and quietly died, user workarounds that reveal latent unmet needs)
+→ Synthesis
 
 **Core question:** *What did the PM team actually decide, and why?*
 
@@ -84,10 +89,12 @@ product decision; and what patterns from other domains illuminate this one.
 
 Key prompts: Business model mechanics and fundamental tensions → Customer
 mindset evolution (before/after states, what drove each shift, the next shift
-still arriving) → Structural dynamics (network effects, unit economics
-ceilings, data feedback loops) → Cross-domain patterns (what this domain
-exports to others, what it has borrowed, non-obvious structural analogies)
-→ Synthesis
+still arriving) and cross-platform behavior spillover (habits users developed
+in adjacent domains that are now reshaping expectations in this one, and what
+product teams are still underreacting to) → Structural dynamics (network
+effects, unit economics ceilings, data feedback loops) → Cross-domain patterns
+(what this domain exports to others, what it has borrowed, non-obvious
+structural analogies) → Synthesis
 
 **Core question:** *How does this business category structurally work?*
 
@@ -96,10 +103,12 @@ Surfaces who's winning and why — not feature comparisons, but structural
 differentiation, competitive dynamics, and where the category is heading.
 
 Key prompts: Market map and structural shifts → Who's gaining vs losing
-ground and what metrics tell the real story → Differentiation analysis
-(what each player does that others can't easily replicate and how durable
-it is) → How to compete against the leader (realistic path for #2 or #3)
-→ Whitespace and future state → Synthesis
+ground, what metrics tell the real story, and trust and attention dynamics
+(what's building habit, what's eroding trust, where attention is visibly
+migrating across players) → Differentiation analysis (what each player does
+that others can't easily replicate and how durable it is) → How to compete
+against the leader (realistic path for #2 or #3) → Whitespace and future
+state → Synthesis
 
 **Core question:** *Who wins, and what would it take to beat them?*
 
@@ -108,12 +117,12 @@ it is) → How to compete against the leader (realistic path for #2 or #3)
 ```
 Prompt Template (one of four types)
         ↓
-Google Deep Research
+Gemini Deep Research
 (6-7 sequential prompts, each building on the last)
         ↓
 Word Document Export
 (synthesis first, full research sections below,
-[DOCUMENTED]/[INFERRED] labels preserved)
+inline citations and numbered sources list preserved)
         ↓
 Paste into Research Library app
         ↓
@@ -136,21 +145,13 @@ and Claude API.
 **Features:**
 - Card grid browsable by research type
 - Auto-formatter: raw text in → structured markdown out, via Claude API
-  running server-side in a Supabase Edge Function
+  running server-side in a Supabase Edge Function. Handles large documents
+  via paragraph-boundary chunking, bold label detection, list inference,
+  and citation-safe formatting — without altering any factual content.
 - Inline citation conversion (`sentence.1` → `sentence.[1]`)
 - Sources section consolidated as a single numbered list
 - Markdown rendering with tables, headings, bold terms
 - Read-only public view — content managed privately
-
-**Current research pieces:**
-
-| Topic | Type |
-|-------|------|
-| Ads | Domain Primer |
-| Meta | Company Deep Dive |
-| Instagram Reels | Product Teardown |
-| Short-Form Video | Competitive Landscape |
-| Uber | Company Deep Dive |
 
 ## Template Design Principles
 
@@ -163,15 +164,24 @@ body of work, not just a single query.
 what decisions reveal, not what communications say. "What are they sacrificing
 to fund this bet" surfaces more than "what is their strategy."
 
-**Signal/noise discipline.** Every template is designed so claims are traceable 
-to sources. The prompt asks for [DOCUMENTED]/[INFERRED] labeling — in practice, 
-Google Deep Research substitutes inline citations and a consolidated sources list. 
-Either way, the output distinguishes grounded claims from reasoned inference, 
+**Signal/noise discipline.** Every template is designed so claims are traceable
+to sources. The prompt asks for [DOCUMENTED]/[INFERRED] labeling — in practice,
+Gemini Deep Research substitutes inline citations and a consolidated sources list.
+Either way, the output distinguishes grounded claims from reasoned inference,
 which makes the synthesis more defensible.
 
 **Prepared opinion as a required output.** Every synthesis ends with a
 specific, defensible point of view — not a summary of what everyone already
 knows. The opinion has to be grounded in a signal from the research above.
+
+**User behavior embedded, not siloed.** Each template surfaces user mindset
+and behavior from its own angle rather than treating it as a separate research
+category. Product Teardown covers segments, latent needs, and stated-vs-revealed
+preference gaps. Domain Primer covers mindset evolution and cross-platform
+behavior spillover. Competitive Landscape covers trust and attention dynamics.
+The reasoning: user trends research is always context-dependent — "user behavior
+in streaming" is useful; "user behavior" in the abstract is not. Embedding the
+user lens into each template ensures it's anchored to the right context.
 
 ## What I Learned Building This
 
@@ -185,13 +195,31 @@ knows. The opinion has to be grounded in a signal from the research above.
   from earnings narratives, features that launched and quietly died, job
   postings that never shipped. These reveal actual strategic limits better
   than any announced priority
-- **The citation discipline changes how you read research** — when every claim 
-  has a traceable source, you naturally start noticing how much of what passes 
+- **The citation discipline changes how you read research** — when every claim
+  has a traceable source, you naturally start noticing how much of what passes
   for product knowledge is inference presented as fact
 - **Research depth compounds across pieces** — after a Domain Primer on Ads
   and a Company Deep Dive on Meta, the Competitive Landscape on Short-Form
   Video took half the time to synthesize because the underlying model was
   already built
+- **User behavior coverage belongs inside each template, not in a fifth one**
+  — the initial templates had gaps in user mindset and behavior coverage.
+  The fix wasn't a standalone "User Trends" template — that would produce
+  research too abstract to be useful. Instead, each template now surfaces
+  user behavior from its own angle: segments and latent needs in Product
+  Teardown, mindset evolution and cross-platform spillover in Domain Primer,
+  trust and attention dynamics in Competitive Landscape. Context-anchored
+  user research is more actionable than a generic user trends pass.
+- **Auto-formatting is harder than it looks** — getting Claude to format
+  faithfully without hallucinating statistics, splitting bullets, or
+  promoting labels to headings required precise prompt constraints and
+  paragraph-boundary chunking on the frontend
+- **Bolt locks in its own Supabase instance on deployment** — when Bolt
+  deploys, it provisions its own Supabase project and overrides any external
+  Supabase connection. Edge functions, database, and environment variables all
+  move to Bolt's managed instance. You lose direct dashboard access to edge
+  functions, so any prompt or config changes must be made in Bolt's code editor
+  directly and deployed via Bolt's MCP tool — not through the Supabase dashboard
 
 ## Repo Structure
 
@@ -207,15 +235,15 @@ pm-research-toolkit/
     ├── src/
     ├── supabase/
     │   └── functions/
-    │       └── format-research/   ← Claude API Edge Function
+    │       └── format-research/   ← Claude API Edge Function (deployed via Bolt MCP)
     ├── public/
     └── package.json
 ```
 
 ## Built With
 
-- Google Deep Research
+- Gemini Deep Research
 - Bolt (frontend + deployment)
-- Supabase (PostgreSQL + Edge Functions)
+- Supabase (PostgreSQL + Edge Functions) — managed by Bolt post-deployment
 - Claude API (markdown auto-formatter)
 - React + Vite + Tailwind
