@@ -139,6 +139,7 @@ lens, not by date.
 - Bolt for frontend deployment
 
 ## Repo Structure
+```
 pm-research-toolkit/
 ├── README.md
 ├── prompt-templates/ ← four .docx prompt chains
@@ -159,7 +160,7 @@ pm-research-toolkit/
 │ ├── format-markdown/ ← legacy permissive formatter
 │ └── verify-password/ ← server-side admin gate
 └── migrations/ ← schema + RLS evolution
-
+```
 ## What I Learned / What I'd Do Differently
 - **Prompt sequencing matters more than prompt quality.** The single biggest
   quality unlock in the templates wasn't better wording — it was breaking one
