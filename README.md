@@ -1,249 +1,211 @@
 # PM Research Toolkit
+A personal system for building deep, structured product knowledge — four
+sequential prompt templates that drive Gemini Deep Research, plus a React +
+Supabase library app that ingests the raw output, runs it through a hard-
+constrained Claude formatter, and serves it as a browsable, citation-preserving
+research library.
 
-> A personal system for building deep, structured knowledge on products,
-> companies, and markets — powered by Gemini Deep Research and Claude API.
+**Live demo:** [PM Research Library](https://pm-research-library-xma0.bolt.host/) _(read-only public view)_
 
-## What This Is
+---
 
-Most product knowledge stays surface-level — a few articles, a 10-K skim,
-some Twitter takes. This toolkit goes deeper.
+## What It Is
+A product-thinking instrument disguised as a research tool. The prompt
+templates encode a specific philosophy about how PMs should interrogate
+products, companies, and markets — *revealed preferences over stated ones,
+quiet failures as the highest-signal data, a defensible opinion as a required
+output*. The library app is the delivery surface: it takes raw Gemini exports,
+formats them faithfully (no fact mutation, citations preserved to the
+character), and renders them as a 10-minute-reviewable card grid.
 
-It produces structured research across four dimensions: how a product evolved
-and what it's actually optimizing for today, how a business category works
-structurally, what a company's real strategic bets reveal about its worldview,
-and where a competitive landscape is heading. Each piece ends with a synthesis
-— a one-line thesis, the defining bet for the next few years, and a prepared
-opinion grounded in the research.
+## Why I Built It
+Most PM interview prep is shallow because most research tooling is shallow.
+You skim a 10-K, read three Stratechery posts, and walk into the room with
+talking points everyone else also has. I wanted research that could survive
+follow-up questions — research where every claim is traceable, every
+synthesis ends in a defensible point of view, and the *why* behind product
+decisions is the actual unit of work, not the *what*.
 
-The output lives in a live, browsable library so any piece is reviewable in
-10 minutes.
-
-## Live App
-
-🔗 [PM Research Library](https://pm-research-library-xma0.bolt.host/)
-
-Read-only public view. Research pieces added continuously.
-
-## What Makes This Different
-
-Most research prompts ask "what is X." These templates ask different questions:
-
-- **Not** "what does this product do" → **"what forced each strategic change,
-  what was deprioritized to enable it, and what do quiet failures reveal about
-  the team's actual priorities"**
-- **Not** "what is this company's strategy" → **"what are they sacrificing to
-  fund their bets, and what does the capital allocation reveal that the
-  earnings call doesn't say"**
-- **Not** "who are the competitors" → **"who is gaining ground on what
-  dimensions, what does conventional wisdom get wrong, and how would you
-  compete against the leader if you were PM at #2"**
-- **Not** "how does this industry work" → **"what domains that look nothing
-  like this one share its deep structural mechanics, and what does that analogy
-  reveal about product strategy"**
-
-Every template forces two things most research skips: **signal/noise
-discipline** (every claim is traceable — Gemini Deep Research substitutes inline
-citations and a numbered sources list rather than [DOCUMENTED]/[INFERRED] labels,
-but the intent is the same: no ungrounded assertions) and **a prepared opinion**
-(a specific, defensible point of view grounded in the research, not a summary of
-what everyone already knows).
-
-## The Four Templates
-
-### Product Teardown
-Surfaces the *why* behind product decisions — not what the product does, but
-what forced changes, what was deprioritized, and what quiet failures reveal
-about strategic limits.
-
-Key prompts: Evolution inflection points (including user mindset and behavior
-shifts as explicit forcing functions) → User segments defined by job-to-be-done
-and context of use, not demographics — which segment shaped the product, which
-is underserved, where segment needs are in tension → Tradeoffs and roads not
-taken → Metrics story, what the North Star caused the team to optimize for,
-and where metrics diverge from stated user preferences → Quiet failures
-(metrics that disappeared from earnings narratives, features that launched
-with fanfare and quietly died, user workarounds that reveal latent unmet needs)
-→ Synthesis
-
-**Core question:** *What did the PM team actually decide, and why?*
-
-### Company Deep Dive
-Surfaces how a company actually thinks — revealed preferences from strategic
-decisions, not stated ones. Covers business architecture, strategic bets and
-what's being sacrificed to fund them, PM authority and culture signals, AI
-strategy (what has shipped vs what was announced), and structural
-vulnerabilities.
-
-Key prompts: Revenue mechanics and capital allocation signals → Strategic
-bets and what they reveal about leadership's worldview → Org and culture
-through a PM lens (decision authority, what gets rewarded, red flags) →
-AI strategy (build vs buy, defensive vs offensive, what has actually shipped)
-→ Vulnerabilities → Synthesis
-
-**Core question:** *What is it actually like to be a PM here?*
-
-### Domain Primer
-Surfaces the structural mechanics every PM in a space must understand — how
-value is created, captured, and distributed; what forces constrain every
-product decision; and what patterns from other domains illuminate this one.
-
-Key prompts: Business model mechanics and fundamental tensions → Customer
-mindset evolution (before/after states, what drove each shift, the next shift
-still arriving) and cross-platform behavior spillover (habits users developed
-in adjacent domains that are now reshaping expectations in this one, and what
-product teams are still underreacting to) → Structural dynamics (network
-effects, unit economics ceilings, data feedback loops) → Cross-domain patterns
-(what this domain exports to others, what it has borrowed, non-obvious
-structural analogies) → Synthesis
-
-**Core question:** *How does this business category structurally work?*
-
-### Competitive Landscape
-Surfaces who's winning and why — not feature comparisons, but structural
-differentiation, competitive dynamics, and where the category is heading.
-
-Key prompts: Market map and structural shifts → Who's gaining vs losing
-ground, what metrics tell the real story, and trust and attention dynamics
-(what's building habit, what's eroding trust, where attention is visibly
-migrating across players) → Differentiation analysis (what each player does
-that others can't easily replicate and how durable it is) → How to compete
-against the leader (realistic path for #2 or #3) → Whitespace and future
-state → Synthesis
-
-**Core question:** *Who wins, and what would it take to beat them?*
+The product decision underneath the whole thing: **reframe the questions.**
+Not "what is this company's strategy" but "what are they sacrificing to fund
+their bets." Not "who are the competitors" but "how would you compete against
+the leader if you were PM at #2." Reframing the prompt is the highest-leverage
+move in the entire pipeline — better than any model upgrade.
 
 ## How It Works
-
 ```
-Prompt Template (one of four types)
-        ↓
-Gemini Deep Research
-(6-7 sequential prompts, each building on the last)
-        ↓
-Word Document Export
-(synthesis first, full research sections below,
-inline citations and numbered sources list preserved)
-        ↓
-Paste into Research Library app
-        ↓
-Claude API (Supabase Edge Function)
-(auto-formats plain text → structured markdown:
-headings, tables, bullets, inline citations [1],
-sources consolidated at bottom)
-        ↓
-Saved to Supabase (PostgreSQL)
-        ↓
-PM Research Library
-(filterable by type, synthesis + full research per entry)
+Prompt Template (.docx) → Gemini Deep Research (6–7 sequential prompts)
+↓
+Word export with inline citations
+↓
+Paste into AddResearchForm (React)
+↓
+Client-side preprocessing: extractSources → preprocessCitations → chunking
+↓
+format-research Edge Function (Claude Sonnet, strict prompt)
+↓
+Supabase Postgres (research_pieces, RLS)
+↓
+Public read-only library (filterable card grid)
 ```
+**Generation layer.** Four `.docx` templates in `prompt-templates/` — Product
+Teardown, Company Deep Dive, Domain Primer, Competitive Landscape. Each is a
+6–7 prompt sequence run inside Gemini Deep Research, where every prompt
+builds on the last and the synthesis (always last) reasons over the entire
+chain. Sequential prompting is the design choice that makes this work — a
+single long prompt produces mediocre research.
 
-## Research Library App
+**Ingest layer.** `src/components/AddResearchForm.tsx` is where raw text
+becomes structured markdown. On `blur` of a textarea it runs three
+deterministic preprocessing steps before any LLM call: `extractSources` slices
+the Works Cited block off so it never reaches the model, `preprocessCitations`
+rewrites `sentence.1` → `sentence.[1]` with a regex (more reliable than
+asking an LLM to do syntax substitution), and the body gets chunked on
+paragraph boundaries above ~8000 chars so citation context never breaks
+mid-sentence. Each chunk is then sent to the `format-research` Edge Function.
 
-Built with Bolt (React + Vite), Supabase (PostgreSQL + Edge Functions),
-and Claude API.
+**Formatter layer.** `supabase/functions/format-research/index.ts` is the
+brain. It holds the Anthropic API key server-side and prepends a system
+prompt structured as *hard constraints first, soft rules second*. The model
+is told it has zero knowledge of the topic and must treat all content as
+arbitrary text it cannot fact-check, improve, or supplement. Headings only
+trigger if five conditions hold simultaneously. Bullets are atomic and
+labels can never be promoted to headings. There are worked anti-pattern
+examples in the prompt because few-shot negative examples constrain LLM
+output better than abstract rules.
 
-**Features:**
-- Card grid browsable by research type
-- Auto-formatter: raw text in → structured markdown out, via Claude API
-  running server-side in a Supabase Edge Function. Handles large documents
-  via paragraph-boundary chunking, bold label detection, list inference,
-  and citation-safe formatting — without altering any factual content.
-- Inline citation conversion (`sentence.1` → `sentence.[1]`)
-- Sources section consolidated as a single numbered list
-- Markdown rendering with tables, headings, bold terms
-- Read-only public view — content managed privately
+**Storage layer.** A single `research_pieces` table in Supabase Postgres
+(see `supabase/migrations/`). RLS is on from the first migration. The
+migration history is honest and unsquashed — you can watch the auth model
+evolve from authenticated-only writes to anon writes once the password gate
+moved server-side, and you can see the `title` column get dropped after I
+realized `topic` + `type` + `synthesis` was the right primary identity.
 
-## Template Design Principles
+**Serving layer.** `src/App.tsx` fetches all pieces on mount, owns filter
+and modal state, and hides admin mode behind a 5-click easter egg on the
+title (`handleSecretClick`) that opens a `PasswordDialog` which calls the
+`verify-password` Edge Function — the password is checked server-side, never
+in the browser. Cards (`ResearchCard.tsx`) render synthesis as memo-parsed
+markdown with a 4-line clamp; clicking opens `ResearchModal.tsx` for the
+full piece.
 
-**Sequential prompting over single-shot prompting.** Each template runs 6-7
-prompts in sequence within the same thread. The synthesis (always last) can
-only be written after all prior research exists — it reasons across the full
-body of work, not just a single query.
+## What's Technically Interesting
+**1. The formatter is a constraint engineering problem, not a prompting problem.**
+The first version of `format-research` hallucinated statistics, split bullets
+across paragraphs, and promoted bullet labels to H2 headings. Fixing it
+required treating the system prompt as a contract: absolute constraints first
+("you have NO knowledge of the topic," "exact wording is sacred"), then
+heading detection as a five-condition AND gate, then worked anti-pattern
+examples for the bullet-integrity rule. There's even a specific carve-out
+for citations that land inside decimals (`$2.[17] billion` was a real bug).
+The lesson: LLMs comply with explicit override hierarchies and negative
+examples far better than with prose instructions.
 
-**Revealed preferences over stated ones.** Every template is oriented toward
-what decisions reveal, not what communications say. "What are they sacrificing
-to fund this bet" surfaces more than "what is their strategy."
+**2. Deterministic preprocessing before the LLM, not after.**
+Citation rewriting and sources extraction happen in TypeScript with regex
+in `AddResearchForm.tsx` *before* the text reaches Claude. Asking an LLM to
+do syntactic substitution is unreliable; asking it to format content whose
+syntax has already been normalized is robust. This split — deterministic
+where possible, LLM only for judgment — is the architectural pattern I'd
+reuse anywhere I worked with model output again.
 
-**Signal/noise discipline.** Every template is designed so claims are traceable
-to sources. The prompt asks for [DOCUMENTED]/[INFERRED] labeling — in practice,
-Gemini Deep Research substitutes inline citations and a consolidated sources list.
-Either way, the output distinguishes grounded claims from reasoned inference,
-which makes the synthesis more defensible.
+**3. Paragraph-boundary chunking, not character chunking.**
+Long documents are split on `\n\n+` boundaries with a ~6000-char target.
+Splitting mid-paragraph would orphan citations from the sentences they
+support and the formatter would reinterpret each fragment in isolation.
+Small detail, big effect on output quality.
 
-**Prepared opinion as a required output.** Every synthesis ends with a
-specific, defensible point of view — not a summary of what everyone already
-knows. The opinion has to be grounded in a signal from the research above.
+**4. The API key is never in the browser.**
+The Anthropic and password secrets live in Edge Functions (`format-research`,
+`verify-password`). Even though `VITE_ANTHROPIC_API_KEY` is named with the
+Vite prefix, it's only read inside `Deno.env.get` server-side. The client
+calls `supabase.functions.invoke(...)` and gets back text. This was
+non-negotiable from day one — a personal tool is still a public surface.
 
-**User behavior embedded, not siloed.** Each template surfaces user mindset
-and behavior from its own angle rather than treating it as a separate research
-category. Product Teardown covers segments, latent needs, and stated-vs-revealed
-preference gaps. Domain Primer covers mindset evolution and cross-platform
-behavior spillover. Competitive Landscape covers trust and attention dynamics.
-The reasoning: user trends research is always context-dependent — "user behavior
-in streaming" is useful; "user behavior" in the abstract is not. Embedding the
-user lens into each template ensures it's anchored to the right context.
+**5. Synthesis-first IA.**
+`ResearchCard` renders the synthesis (not the topic dump) with a 4-line
+clamp and a fade-out gradient. The product constraint was "every piece is
+reviewable in 10 minutes." That constraint drove the schema (synthesis is
+its own column), the card layout, and the filter chips that mirror the four
+research types. The IA matches how a PM actually browses research — by
+lens, not by date.
 
-## What I Learned Building This
-
-- **Prompt sequencing matters more than prompt quality** — a single long
-  prompt produces mediocre research; breaking it into sequential prompts
-  where each builds on the last produces genuinely structured analysis
-- **Forcing the tradeoff frame changes the output** — "what were they
-  sacrificing" produces different (better) research than "what were they
-  prioritizing"
-- **Quiet failures are the most valuable signal** — metrics that disappeared
-  from earnings narratives, features that launched and quietly died, job
-  postings that never shipped. These reveal actual strategic limits better
-  than any announced priority
-- **The citation discipline changes how you read research** — when every claim
-  has a traceable source, you naturally start noticing how much of what passes
-  for product knowledge is inference presented as fact
-- **Research depth compounds across pieces** — after a Domain Primer on Ads
-  and a Company Deep Dive on Meta, the Competitive Landscape on Short-Form
-  Video took half the time to synthesize because the underlying model was
-  already built
-- **User behavior coverage belongs inside each template, not in a fifth one**
-  — the initial templates had gaps in user mindset and behavior coverage.
-  The fix wasn't a standalone "User Trends" template — that would produce
-  research too abstract to be useful. Instead, each template now surfaces
-  user behavior from its own angle: segments and latent needs in Product
-  Teardown, mindset evolution and cross-platform spillover in Domain Primer,
-  trust and attention dynamics in Competitive Landscape. Context-anchored
-  user research is more actionable than a generic user trends pass.
-- **Auto-formatting is harder than it looks** — getting Claude to format
-  faithfully without hallucinating statistics, splitting bullets, or
-  promoting labels to headings required precise prompt constraints and
-  paragraph-boundary chunking on the frontend
-- **Bolt locks in its own Supabase instance on deployment** — when Bolt
-  deploys, it provisions its own Supabase project and overrides any external
-  Supabase connection. Edge functions, database, and environment variables all
-  move to Bolt's managed instance. You lose direct dashboard access to edge
-  functions, so any prompt or config changes must be made in Bolt's code editor
-  directly and deployed via Bolt's MCP tool — not through the Supabase dashboard
+## Stack
+- React 18 + Vite + TypeScript + Tailwind
+- Supabase (Postgres + Edge Functions, Deno runtime)
+- Anthropic Claude API (Sonnet) — markdown formatter
+- Gemini Deep Research — research generation
+- `marked` for client-side markdown rendering
+- Bolt for frontend deployment
 
 ## Repo Structure
-
-```
 pm-research-toolkit/
 ├── README.md
-├── prompt-templates/
-│   ├── Prompt_Template_Product_Teardown.docx
-│   ├── Prompt_Template_Domain_Primer.docx
-│   ├── Prompt_Template_Company_Deep_Dive.docx
-│   └── Prompt_Template_Competitive_Landscape.docx
+├── prompt-templates/ ← four .docx prompt chains
 └── research-library-app/
-    ├── src/
-    ├── supabase/
-    │   └── functions/
-    │       └── format-research/   ← Claude API Edge Function (deployed via Bolt MCP)
-    ├── public/
-    └── package.json
-```
+├── src/
+│ ├── App.tsx ← shell, fetch, filter, admin gate
+│ ├── components/
+│ │ ├── ResearchCard.tsx ← grid card, synthesis preview
+│ │ ├── ResearchModal.tsx ← full reader
+│ │ ├── AddResearchForm.tsx ← ingest pipeline (preprocess → format)
+│ │ ├── DeleteConfirmDialog.tsx
+│ │ └── PasswordDialog.tsx
+│ ├── lib/supabase.ts
+│ └── types/index.ts
+└── supabase/
+├── functions/
+│ ├── format-research/ ← strict Claude formatter (the brain)
+│ ├── format-markdown/ ← legacy permissive formatter
+│ └── verify-password/ ← server-side admin gate
+└── migrations/ ← schema + RLS evolution
 
-## Built With
+## What I Learned / What I'd Do Differently
+- **Prompt sequencing matters more than prompt quality.** The single biggest
+  quality unlock in the templates wasn't better wording — it was breaking one
+  long prompt into 6–7 prompts where each builds on the prior. Anything that
+  asks an LLM to do "research and synthesize" in one shot is leaving most of
+  the value on the floor.
 
-- Gemini Deep Research
-- Bolt (frontend + deployment)
-- Supabase (PostgreSQL + Edge Functions) — managed by Bolt post-deployment
-- Claude API (markdown auto-formatter)
-- React + Vite + Tailwind
+- **I almost built a fifth "User Trends" template. I'm glad I didn't.**
+  Abstract user research isn't actionable; "user behavior in streaming" is
+  useful, "user behavior" is not. Instead I embedded the user lens inside
+  each existing template — segments and latent needs in Product Teardown,
+  mindset evolution in Domain Primer, trust and attention dynamics in
+  Competitive Landscape. Context-anchored beats standalone, every time.
+
+- **The legacy `format-markdown` function is still in the repo and it
+  shouldn't be.** I kept it during the prompt-tightening cycle so I could
+  A/B compare outputs, then never deleted it. If I were starting over I'd
+  delete it the day I cut over to `format-research`. Dead code is a tax on
+  every future reader of the repo, including future me.
+
+- **RLS got loosened to anon writes once the password gate moved to an Edge
+  Function. I'd architect that differently next time.** Today, anyone with
+  the anon key can technically write to the table; the only thing protecting
+  it is that the UI gates the write path behind a server-checked password.
+  That's *fine* for a personal tool, but the right design is a real auth
+  session — issue a short-lived JWT from `verify-password` and gate writes
+  on `auth.uid()` in RLS. I'd do that on day one of any non-personal version.
+
+- **Bolt locks in its own Supabase instance on deployment.** When Bolt
+  deploys, it provisions its own Supabase project and overrides any external
+  connection — edge functions, DB, env vars all migrate. You lose direct
+  dashboard access to the deployed Edge Functions, so prompt or config
+  changes have to go through Bolt's editor and MCP tool, not the Supabase
+  dashboard. I'd know to expect that next time and pick a deployment path
+  that didn't fight the Supabase tooling.
+
+- **Auto-formatting plain text into markdown is harder than it looks.**
+  Every few-line edge case I didn't think of (citations inside decimals,
+  Label: lines that should bold, Label: lines that look like bullets but
+  aren't, "Sources" headings buried in prose) became its own constraint in
+  the system prompt. The only sustainable approach was to write down each
+  failure as a worked anti-pattern in the prompt itself. That file is now
+  effectively a regression test suite written in English.
+
+- **The citation discipline changed how I read other people's research.**
+  Once every claim in my own pieces had a traceable source, I started
+  noticing how much published "product analysis" is inference dressed up
+  as fact. That shift in reading is, honestly, the most useful thing
+  building this gave me.
